@@ -11,6 +11,7 @@ fn main() {
     println!("{color_depth}", color_depth = 255);
 
     for j in (0..IMG_HEIGHT).rev() {
+        eprintln!("\rScanlines remaining: {}", j);
         for i in 0..IMG_WIDTH {
             let r = (i as f64) / (IMG_WIDTH - 1) as f64;
             let g = (j as f64) / (IMG_HEIGHT - 1) as f64;
@@ -23,4 +24,7 @@ fn main() {
             println!("{} {} {}", int_r, int_g, int_b);
         }
     }
+
+    eprintln!();
+    eprintln!("Done.");
 }
