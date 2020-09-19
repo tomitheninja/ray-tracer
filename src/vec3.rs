@@ -48,6 +48,9 @@ impl Vec3 {
     }
 
     pub fn rgb(&self) -> (u8, u8, u8) {
+        assert!(0.0 <= self.x() && self.x() <= 1.0);
+        assert!(0.0 <= self.y() && self.y() <= 1.0);
+        assert!(0.0 <= self.z() && self.z() <= 1.0);
         let as_u8 = |x: f64| ((x * 255.999) as u8);
         (as_u8(self.x()), as_u8(self.y()), as_u8(self.z()))
     }
