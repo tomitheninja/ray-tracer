@@ -113,6 +113,14 @@ macro_rules! gen_immutable_ops {
                 self + Self::new(rhs, rhs, rhs)
             }
         }
+
+        impl $trait_name<$target> for f64 {
+            type Output = $target;
+
+            fn $trait_fn(self, rhs: $target) -> Self::Output {
+                rhs + self
+            }
+        }
     };
 }
 
@@ -163,6 +171,14 @@ mod tests {
         let scalar = 8.0;
         let expected_result = Vec3::new(9.0, 10.0, 11.0);
         assert_eq!(v1 + scalar, expected_result);
+    }
+
+    #[test]
+    fn add_vector_to_scalar() {
+        let v1 = Vec3::new(1.0, 2.0, 3.0);
+        let scalar = 8.0;
+        let expected_result = Vec3::new(9.0, 10.0, 11.0);
+        assert_eq!(scalar + v1, expected_result);
     }
 
     #[test]
