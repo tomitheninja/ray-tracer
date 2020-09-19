@@ -6,6 +6,9 @@ use std::ops::{
 #[derive(Debug, Copy, Clone, PartialEq, Default)]
 pub struct Vec3(f64, f64, f64);
 
+pub use Vec3 as Point3;
+pub use Vec3 as Color;
+
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self(x, y, z)

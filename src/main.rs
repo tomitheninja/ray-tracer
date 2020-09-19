@@ -2,7 +2,7 @@ mod ray;
 mod vec3;
 
 use ray::Ray;
-use vec3::Vec3;
+use vec3::{Color, Point3};
 
 fn main() {
     // Image
@@ -18,13 +18,13 @@ fn main() {
     let viewport_width: f64 = aspect_ratio * viewport_height;
     let focal_length: f64 = 1.0;
 
-    let origin = Vec3::new(0.0, 0.0, 0.0);
-    let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, viewport_height, 0.0);
+    let origin = Point3::new(0.0, 0.0, 0.0);
+    let horizontal = Point3::new(viewport_width, 0.0, 0.0);
+    let vertical = Point3::new(0.0, viewport_height, 0.0);
     let lower_left_corner = {
-        let half_horizontal: Vec3 = horizontal / 2.0;
-        let half_vertical: Vec3 = vertical / 2.0;
-        let focal = Vec3::new(0.0, 0.0, focal_length);
+        let half_horizontal: Point3 = horizontal / 2.0;
+        let half_vertical: Point3 = vertical / 2.0;
+        let focal = Point3::new(0.0, 0.0, focal_length);
         origin - half_horizontal - half_vertical - focal
     };
 
