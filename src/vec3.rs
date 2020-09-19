@@ -110,7 +110,7 @@ macro_rules! gen_immutable_ops {
             type Output = Self;
 
             fn $trait_fn(self, rhs: f64) -> Self::Output {
-                self + Self::new(rhs, rhs, rhs)
+                $trait_name::$trait_fn(self, Self::new(rhs, rhs, rhs))
             }
         }
 
@@ -118,7 +118,7 @@ macro_rules! gen_immutable_ops {
             type Output = $target;
 
             fn $trait_fn(self, rhs: $target) -> Self::Output {
-                rhs + self
+                $trait_name::$trait_fn(rhs, self)
             }
         }
     };
@@ -165,6 +165,15 @@ mod tests {
         let expected_result = Vec3::new(7.0, 2.0, 4.0);
         assert_eq!(v1 + v2, expected_result);
     }
+
+    #[test]
+    fn sub_vector() {
+        let v1 = Vec3::new(1.0, 2.0, 3.0);
+        let v2 = Vec3::new(6.0, 0.0, 1.0);
+        let expected_result = Vec3::new(-5.0, 2.0, 2.0);
+        assert_eq!(v1 - v2, expected_result);
+    }
+
     #[test]
     fn add_scalar() {
         let v1 = Vec3::new(1.0, 2.0, 3.0);
@@ -182,6 +191,22 @@ mod tests {
     }
 
     #[test]
+    fn mul_vector_to_scalar() {
+        let v1 = Vec3::new(1.0, 2.0, -3.0);
+        let scalar = 8.0;
+        let expected_result = Vec3::new(8.0, 16.0, -24.0);
+        assert_eq!(scalar * v1, expected_result);
+    }
+
+    #[test]
+    fn sub_scalar() {
+        let v1 = Vec3::new(1.0, 2.0, 3.0);
+        let scalar = 8.0;
+        let expected_result = Vec3::new(-7.0, -6.0, -5.0);
+        assert_eq!(v1 - scalar, expected_result);
+    }
+
+    #[test]
     fn add_assign_vector() {
         let mut v1 = Vec3::new(1.0, 2.0, 3.0);
         v1 += Vec3::new(7.0, 2.0, 4.0);
@@ -190,10 +215,26 @@ mod tests {
     }
 
     #[test]
+    fn sub_assign_vector() {
+        let mut v1 = Vec3::new(1.0, 2.0, 3.0);
+        v1 -= Vec3::new(7.0, 2.0, 4.0);
+        let expected_result = Vec3::new(-6.0, 0.0, -1.0);
+        assert_eq!(v1, expected_result);
+    }
+
+    #[test]
     fn add_assign_scalar() {
         let mut v1 = Vec3::new(1.0, 2.0, 3.0);
         v1 += 2.0;
         let expected_result = Vec3::new(3.0, 4.0, 5.0);
+        assert_eq!(v1, expected_result);
+    }
+
+    #[test]
+    fn sub_assign_scalar() {
+        let mut v1 = Vec3::new(1.0, 2.0, 3.0);
+        v1 -= 2.0;
+        let expected_result = Vec3::new(-1.0, 0.0, 1.0);
         assert_eq!(v1, expected_result);
     }
 }
