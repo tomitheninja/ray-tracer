@@ -1,0 +1,38 @@
+name: Rust
+
+on:
+  push:
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    
+    - name: cargo check
+      run: cargo check --verbose
+
+    - name: cargo build
+      run: cargo build --verbose
+
+    - name: cargo test
+      run: cargo test --verbose
+    
+    - name: cargo build (release)
+      run: cargo build --verbose --release
+    
+    - name: cargo run (release)
+      run: cargo run --release > /tmp/img.ppm
+    
+    - name: upload artifact to github
+      uses: actions/upload-artifact@v2
+      with:
+        name: image.ppm
+        path: /tmp/img.ppm
