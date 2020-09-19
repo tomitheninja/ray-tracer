@@ -3,7 +3,7 @@ use std::ops::{
     Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
 };
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Default)]
 pub struct Vec3(f64, f64, f64);
 
 impl Vec3 {
@@ -48,6 +48,9 @@ impl Vec3 {
     }
 
     pub fn rgb(&self) -> (u8, u8, u8) {
+        assert!(0.0 <= self.x() && self.x() <= 1.0);
+        assert!(0.0 <= self.y() && self.y() <= 1.0);
+        assert!(0.0 <= self.z() && self.z() <= 1.0);
         let as_u8 = |x: f64| ((x * 255.999) as u8);
         (as_u8(self.x()), as_u8(self.y()), as_u8(self.z()))
     }
@@ -113,6 +116,14 @@ macro_rules! gen_immutable_ops {
                 $trait_name::$trait_fn(self, Self::new(rhs, rhs, rhs))
             }
         }
+
+        impl $trait_name<$target> for f64 {
+            type Output = $target;
+
+            fn $trait_fn(self, rhs: $target) -> Self::Output {
+                $trait_name::$trait_fn(rhs, self)
+            }
+        }
     };
 }
 
@@ -172,6 +183,22 @@ mod tests {
         let scalar = 8.0;
         let expected_result = Vec3::new(9.0, 10.0, 11.0);
         assert_eq!(v1 + scalar, expected_result);
+    }
+
+    #[test]
+    fn add_vector_to_scalar() {
+        let v1 = Vec3::new(1.0, 2.0, 3.0);
+        let scalar = 8.0;
+        let expected_result = Vec3::new(9.0, 10.0, 11.0);
+        assert_eq!(scalar + v1, expected_result);
+    }
+
+    #[test]
+    fn mul_vector_to_scalar() {
+        let v1 = Vec3::new(1.0, 2.0, -3.0);
+        let scalar = 8.0;
+        let expected_result = Vec3::new(8.0, 16.0, -24.0);
+        assert_eq!(scalar * v1, expected_result);
     }
 
     #[test]
