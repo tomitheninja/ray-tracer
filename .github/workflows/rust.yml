@@ -34,5 +34,5 @@ jobs:
     - name: upload artifact to github
       uses: actions/upload-artifact@v2
       with:
-        name: image.ppm
+        name: artifact
         path: /tmp/img.ppm
