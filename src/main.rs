@@ -1,3 +1,7 @@
+mod vec3;
+
+use vec3::Vec3;
+
 fn main() {
     // Image
 
@@ -11,17 +15,17 @@ fn main() {
     println!("{color_depth}", color_depth = 255);
 
     for j in (0..IMG_HEIGHT).rev() {
-        eprintln!("\rScanlines remaining: {}", j);
+        let steps = (IMG_HEIGHT - 1) / 10;
+        if j % steps == 0 {
+            eprint!("\rScanlines remaining: {:>4}", j);
+        }
         for i in 0..IMG_WIDTH {
-            let r = (i as f64) / (IMG_WIDTH - 1) as f64;
-            let g = (j as f64) / (IMG_HEIGHT - 1) as f64;
-            let b = 0.25;
-
-            let int_r = (255.999 * r) as u8;
-            let int_g = (255.999 * g) as u8;
-            let int_b = (255.999 * b) as u8;
-
-            println!("{} {} {}", int_r, int_g, int_b);
+            let color = Vec3::new(
+                (i as f64) / (IMG_WIDTH as f64 - 1.0),
+                (j as f64) / (IMG_HEIGHT as f64 - 1.0),
+                0.25,
+            );
+            println!("{}", color);
         }
     }
 
