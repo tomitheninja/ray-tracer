@@ -1,9 +1,3 @@
-mod color;
-mod point3;
-mod vec3;
-
-use color::Color;
-
 fn main() {
     // Image
 
@@ -11,6 +5,7 @@ fn main() {
     const IMG_HEIGHT: usize = 256;
 
     // Render
+
     println!("P3");
     println!("{width} {height}", width = IMG_WIDTH, height = IMG_HEIGHT);
     println!("{color_depth}", color_depth = 255);
@@ -22,7 +17,11 @@ fn main() {
             let g = (j as f64) / (IMG_HEIGHT - 1) as f64;
             let b = 0.25;
 
-            println!("{}", Color::new(r, g, b));
+            let int_r = (255.999 * r) as u8;
+            let int_g = (255.999 * g) as u8;
+            let int_b = (255.999 * b) as u8;
+
+            println!("{} {} {}", int_r, int_g, int_b);
         }
     }
 
