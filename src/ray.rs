@@ -1,57 +1,59 @@
-use super::{Color, Point3};
+use super::{Color, Point};
 
-#[derive(Debug, Copy, Clone, PartialEq, Default)]
-pub struct Ray {
-    origin: Point3,
-    direction: Point3,
+#[derive(Debug, Copy, Clone)]
+pub struct Ray<'a> {
+    origin: &'a Point,
+    direction: &'a Point,
 }
 
-impl Ray {
-    pub fn new(origin: Point3, direction: Point3) -> Self {
+impl<'a> Ray<'a> {
+    pub fn new(origin: &'a Point, direction: &'a Point) -> Self {
         Self { origin, direction }
     }
 
-    pub fn origin(&self) -> &Point3 {
-        &self.origin
+    pub fn origin(&self) -> &Point {
+        self.origin
     }
 
-    pub fn direction(&self) -> &Point3 {
-        &self.direction
+    pub fn direction(&self) -> &Point {
+        self.direction
     }
 
-    pub fn at(&self, t: f64) -> Point3 {
-        *self.origin() + t * *self.direction()
+    pub fn point_at(&self, t: f64) -> Point {
+        *self.origin + t * *self.direction
     }
 
     pub fn color(&self) -> Color {
-        let t = self.hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5);
-        if t > 0.0 {
-            let n = self.at(t) - Point3::new(0.0, 0.0, -1.0);
-            0.5 * (n + 1.0)
+        if let Some(t) = self.hit_sphere(&Point::new(0.0, 0.0, -1.0), 0.5) {
+            let n = self.point_at(t) - Point::new(0.0, 0.0, -1.0);
+            0.5 * (n.unit_vector() + 1.0)
         } else {
-            let unit_dir = self.direction().unit_vector();
-            let t = 0.5 * (unit_dir.y() + 1.0);
-            let white = Color::new(1.0, 1.0, 1.0);
-            let color2 = Color::new(0.5, 0.7, 1.0);
-            (1.0 - t) * white + t * color2
+            let unit_vec = self.direction.unit_vector();
+            let t = 0.5 * (unit_vec.y() + 1.0);
+            (1.0 - t) * Color::white() + t * Color::new(0.5, 0.7, 1.0)
         }
     }
 
-    /// A sphere is stored as `x^2 + y^2 + z^2 = r^2`
-    ///
-    /// If the quadratic equation has two solutions (disc > 0)
-    ///
-    /// The the ray goes through the sphere
-    pub fn hit_sphere(&self, center: &Point3, radius: f64) -> f64 {
-        let oc = *self.origin() - *center;
-        let a = self.direction().len_squared();
-        let half_b = oc.dot(self.direction());
-        let c = oc.len_squared() - radius * radius;
-        let discriminant = half_b * half_b - a * c;
+    pub fn hit_sphere(&self, center: &Point, r: f64) -> Option<f64> {
+        // A sphere is given using x^2 + y^2 + z^2 = r^2
+        //
+        // If the ray goes through the sphere
+        // then the discriminant > 0 (there are two points where it hits the sphere)
+        //
+        // If the ray hits the edge of the sphere
+        // then the discriminant = 0 (there is exactly one point)
+        //
+        // If the ray missed
+        // then the discriminant < 0 (there are no solutions)
+        let oc = *self.origin - *center;
+        let a = Point::dot(&self.direction, &self.direction);
+        let b = 2.0 * Point::dot(&oc, &self.direction);
+        let c = Point::dot(&oc, &oc) - r.powi(2);
+        let discriminant = b.powi(2) - 4.0 * a * c;
         if discriminant < 0.0 {
-            -1.0
+            None
         } else {
-            (half_b + discriminant.sqrt()) / a
+            Some((-b - discriminant.sqrt()) / (2.0 * a))
         }
     }
 }
