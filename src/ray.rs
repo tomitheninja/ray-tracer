@@ -19,13 +19,15 @@ impl Ray {
         &self.direction
     }
 
-    // pub fn at(&self, t: f64) -> Vec3 {
-    //     *self.origin() + t * *self.direction()
-    // }
+    pub fn at(&self, t: f64) -> Point3 {
+        *self.origin() + t * *self.direction()
+    }
 
     pub fn color(&self) -> Color {
-        if self.hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5) {
-            Color::new(1.0, 0.0, 0.0)
+        let t = self.hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5);
+        if t > 0.0 {
+            let n = self.at(t) - Point3::new(0.0, 0.0, -1.0);
+            0.5 * (n + 1.0)
         } else {
             let unit_dir = self.direction().unit_vector();
             let t = 0.5 * (unit_dir.y() + 1.0);
@@ -40,12 +42,16 @@ impl Ray {
     /// If the quadratic equation has two solutions (disc > 0)
     ///
     /// The the ray goes through the sphere
-    pub fn hit_sphere(&self, center: &Point3, radius: f64) -> bool {
+    pub fn hit_sphere(&self, center: &Point3, radius: f64) -> f64 {
         let oc = *self.origin() - *center;
-        let a = self.direction().dot(self.direction());
-        let b = 2.0 * oc.dot(self.direction());
-        let c = oc.dot(&oc) - radius * radius;
-        let discriminant = b * b - 4.0 * a * c;
-        discriminant > 0.0
+        let a = self.direction().len_squared();
+        let half_b = oc.dot(self.direction());
+        let c = oc.len_squared() - radius * radius;
+        let discriminant = half_b * half_b - a * c;
+        if discriminant < 0.0 {
+            -1.0
+        } else {
+            (half_b + discriminant.sqrt()) / a
+        }
     }
 }

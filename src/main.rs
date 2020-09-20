@@ -41,12 +41,11 @@ fn main() {
         for i in 0..img_width {
             let u = (i as f64) / (img_width as f64 - 1.0);
             let v = (j as f64) / (img_height as f64 - 1.0);
-            let ray = Ray::new(
+            let r = Ray::new(
                 origin,
                 lower_left_corner + u * horizontal + v * vertical - origin,
             );
-            assert_eq!(*ray.origin(), origin);
-            let color = ray.color();
+            let color = r.color();
             println!("{}", color);
         }
     }
