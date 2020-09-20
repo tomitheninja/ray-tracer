@@ -1,10 +1,8 @@
-use std::fmt;
-use std::ops::{
-    Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
-};
-
-#[derive(Debug, Copy, Clone, PartialEq, Default)]
+#[derive(Debug, Default, Copy, Clone, PartialEq)]
 pub struct Vec3(f64, f64, f64);
+
+pub use Vec3 as Color;
+pub use Vec3 as Point;
 
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
@@ -23,23 +21,23 @@ impl Vec3 {
         self.2
     }
 
-    pub fn len_squared(&self) -> f64 {
-        self.x() * self.x() + self.y() * self.y() + self.z() * self.z()
-    }
-
     pub fn len(&self) -> f64 {
         self.len_squared().sqrt()
     }
 
-    pub fn dot(&self, other: &Self) -> f64 {
-        self.x() * other.x() + self.y() * other.y() + self.z() * self.z()
+    pub fn len_squared(&self) -> f64 {
+        self.x().powi(2) + self.y().powi(2) + self.z().powi(2)
     }
 
-    pub fn cross(&self, other: &Self) -> Self {
-        Self(
-            self.y() * other.z() - self.z() * other.y(),
-            self.z() * other.x() - self.x() * other.z(),
-            self.x() * other.y() - self.y() * other.x(),
+    pub fn dot(u: &Self, v: &Self) -> f64 {
+        (0..3).map(|i| u[i] * v[i]).sum()
+    }
+
+    pub fn cross(u: &Self, v: &Self) -> Self {
+        Self::new(
+            u.1 * v.2 - u.2 * v.1,
+            u.2 * v.0 - u.0 * v.2,
+            u.0 * v.1 - u.1 * v.0,
         )
     }
 
@@ -47,55 +45,44 @@ impl Vec3 {
         *self / self.len()
     }
 
-    pub fn rgb(&self) -> (u8, u8, u8) {
-        assert!(0.0 <= self.x() && self.x() <= 1.0);
-        assert!(0.0 <= self.y() && self.y() <= 1.0);
-        assert!(0.0 <= self.z() && self.z() <= 1.0);
-        let as_u8 = |x: f64| ((x * 255.999) as u8);
-        (as_u8(self.x()), as_u8(self.y()), as_u8(self.z()))
+    fn to_u8(x: f64) -> u8 {
+        assert!(0.0 <= x);
+        assert!(x <= 1.0);
+        (x * 255.999) as u8
+    }
+
+    pub fn rgb(&self) -> String {
+        format!(
+            "{:03} {:03} {:03}",
+            Self::to_u8(self.0),
+            Self::to_u8(self.1),
+            Self::to_u8(self.2)
+        )
+    }
+
+    pub fn white() -> Self {
+        Self::new(1.0, 1.0, 1.0)
+    }
+
+    pub fn red() -> Self {
+        Self::new(1.0, 0.0, 0.0)
+    }
+
+    pub fn green() -> Self {
+        Self::new(0.0, 1.0, 0.0)
+    }
+
+    pub fn blue() -> Self {
+        Self::new(0.0, 0.0, 1.0)
+    }
+
+    pub fn black() -> Self {
+        Self::new(0.0, 0.0, 0.0)
     }
 }
 
-impl fmt::Display for Vec3 {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let (r, g, b) = self.rgb();
-        write!(f, "{} {} {}", r, g, b)
-    }
-}
-
-impl Neg for Vec3 {
-    type Output = Vec3;
-
-    fn neg(self) -> Self::Output {
-        Self::new(-self.0, -self.1, -self.2)
-    }
-}
-
-impl Index<usize> for Vec3 {
-    type Output = f64;
-
-    fn index(&self, index: usize) -> &Self::Output {
-        match index {
-            0 => &self.0,
-            1 => &self.1,
-            2 => &self.2,
-            _ => unreachable!("Invalid index"),
-        }
-    }
-}
-
-impl IndexMut<usize> for Vec3 {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        match index {
-            0 => &mut self.0,
-            1 => &mut self.1,
-            2 => &mut self.2,
-            _ => unreachable!("Invalid index"),
-        }
-    }
-}
-
-macro_rules! gen_immutable_ops {
+use std::ops::{Add, Div, Mul, Sub};
+macro_rules! impl_immutable_op {
     ($target:ident, $trait_name:ident, $trait_fn:ident) => {
         impl $trait_name<Self> for $target {
             type Output = Self;
@@ -113,7 +100,11 @@ macro_rules! gen_immutable_ops {
             type Output = Self;
 
             fn $trait_fn(self, rhs: f64) -> Self::Output {
-                $trait_name::$trait_fn(self, Self::new(rhs, rhs, rhs))
+                Self::new(
+                    $trait_name::$trait_fn(self.0, rhs),
+                    $trait_name::$trait_fn(self.1, rhs),
+                    $trait_name::$trait_fn(self.2, rhs),
+                )
             }
         }
 
@@ -121,18 +112,23 @@ macro_rules! gen_immutable_ops {
             type Output = $target;
 
             fn $trait_fn(self, rhs: $target) -> Self::Output {
-                $trait_name::$trait_fn(rhs, self)
+                $target::new(
+                    $trait_name::$trait_fn(self, rhs.0),
+                    $trait_name::$trait_fn(self, rhs.1),
+                    $trait_name::$trait_fn(self, rhs.2),
+                )
             }
         }
     };
 }
 
-gen_immutable_ops!(Vec3, Add, add);
-gen_immutable_ops!(Vec3, Sub, sub);
-gen_immutable_ops!(Vec3, Div, div);
-gen_immutable_ops!(Vec3, Mul, mul);
+impl_immutable_op!(Vec3, Add, add);
+impl_immutable_op!(Vec3, Sub, sub);
+impl_immutable_op!(Vec3, Mul, mul);
+impl_immutable_op!(Vec3, Div, div);
 
-macro_rules! gen_assign_ops {
+use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
+macro_rules! impl_assign_op {
     ($target:ident, $trait_name:ident, $trait_fn:ident) => {
         impl $trait_name<Self> for $target {
             fn $trait_fn(&mut self, rhs: Self) {
@@ -141,7 +137,6 @@ macro_rules! gen_assign_ops {
                 $trait_name::$trait_fn(&mut self.2, rhs.2);
             }
         }
-
         impl $trait_name<f64> for $target {
             fn $trait_fn(&mut self, rhs: f64) {
                 $trait_name::$trait_fn(&mut self.0, rhs);
@@ -152,10 +147,44 @@ macro_rules! gen_assign_ops {
     };
 }
 
-gen_assign_ops!(Vec3, AddAssign, add_assign);
-gen_assign_ops!(Vec3, SubAssign, sub_assign);
-gen_assign_ops!(Vec3, DivAssign, div_assign);
-gen_assign_ops!(Vec3, MulAssign, mul_assign);
+impl_assign_op!(Vec3, AddAssign, add_assign);
+impl_assign_op!(Vec3, SubAssign, sub_assign);
+impl_assign_op!(Vec3, MulAssign, mul_assign);
+impl_assign_op!(Vec3, DivAssign, div_assign);
+
+use std::ops::{Index, IndexMut, Neg};
+
+impl Neg for Vec3 {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        self * -1.0
+    }
+}
+
+impl Index<usize> for Vec3 {
+    type Output = f64;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        match index {
+            0 => &self.0,
+            1 => &self.1,
+            2 => &self.2,
+            _ => panic!("Invalid index"),
+        }
+    }
+}
+
+impl IndexMut<usize> for Vec3 {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        match index {
+            0 => &mut self.0,
+            1 => &mut self.1,
+            2 => &mut self.2,
+            _ => panic!("Invalid index"),
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
