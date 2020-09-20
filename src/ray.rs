@@ -24,7 +24,8 @@ impl<'a> Ray<'a> {
     }
 
     pub fn color(&self) -> Color {
-        if let Some(t) = self.hit_sphere(&Point::new(0.0, 0.0, -1.0), 0.5) {
+        let center = &Point::new(0.0, 0.0, -1.0);
+        if let Some(t) = self.hit_sphere(center, 0.5) {
             let n = self.point_at(t) - Point::new(0.0, 0.0, -1.0);
             0.5 * (n.unit_vector() + 1.0)
         } else {
@@ -46,14 +47,14 @@ impl<'a> Ray<'a> {
         // If the ray missed
         // then the discriminant < 0 (there are no solutions)
         let oc = *self.origin - *center;
-        let a = Point::dot(&self.direction, &self.direction);
-        let b = 2.0 * Point::dot(&oc, &self.direction);
-        let c = Point::dot(&oc, &oc) - r.powi(2);
-        let discriminant = b.powi(2) - 4.0 * a * c;
+        let a = self.direction.len_squared();
+        let half_b = Point::dot(&oc, &self.direction);
+        let c = oc.len_squared() - r * r;
+        let discriminant = half_b.powi(2) - a * c;
         if discriminant < 0.0 {
             None
         } else {
-            Some((-b - discriminant.sqrt()) / (2.0 * a))
+            Some((-half_b - discriminant.sqrt()) / a)
         }
     }
 }
