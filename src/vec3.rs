@@ -46,17 +46,17 @@ impl Vec3 {
     }
 
     fn to_u8(x: f64) -> u8 {
-        assert!(0.0 <= x);
-        assert!(x <= 1.0);
-        (x * 255.999) as u8
+        (255.999 * x.min(0.999).max(0.0)) as u8
     }
 
-    pub fn rgb(&self) -> String {
+    pub fn rgb(&self, samples_per_pixel: usize) -> String {
+        let scale = 1.0 / (samples_per_pixel as f64);
+
         format!(
             "{:03} {:03} {:03}",
-            Self::to_u8(self.0),
-            Self::to_u8(self.1),
-            Self::to_u8(self.2)
+            Self::to_u8(self.0 * scale),
+            Self::to_u8(self.1 * scale),
+            Self::to_u8(self.2 * scale)
         )
     }
 

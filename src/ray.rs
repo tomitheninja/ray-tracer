@@ -1,26 +1,26 @@
-use super::{Color, HitRecord, Hittable, HittableList, Point, Sphere};
+use super::{Color, Hittable, HittableList, Point};
 
 #[derive(Debug, Copy, Clone)]
-pub struct Ray<'a> {
-    origin: &'a Point,
-    direction: &'a Point,
+pub struct Ray {
+    origin: Point,
+    direction: Point,
 }
 
-impl<'a> Ray<'a> {
-    pub fn new(origin: &'a Point, direction: &'a Point) -> Self {
+impl Ray {
+    pub fn new(origin: Point, direction: Point) -> Self {
         Self { origin, direction }
     }
 
     pub fn origin(&self) -> &Point {
-        self.origin
+        &self.origin
     }
 
     pub fn direction(&self) -> &Point {
-        self.direction
+        &self.direction
     }
 
     pub fn point_at(&self, t: f64) -> Point {
-        *self.origin + t * *self.direction
+        self.origin + t * self.direction
     }
 
     pub fn color(&self, world: &HittableList) -> Color {
