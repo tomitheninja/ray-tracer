@@ -1,4 +1,4 @@
-use super::{HitRecord, Hittable, Point};
+use super::{HitRecord, Hittable};
 use std::rc::Rc;
 
 #[derive(Debug, Default)]
@@ -7,9 +7,9 @@ pub struct HittableList {
 }
 
 impl HittableList {
-    pub fn new(obj: Rc<dyn Hittable>) -> Self {
-        HittableList { objects: vec![obj] }
-    }
+    // pub fn new(obj: Rc<dyn Hittable>) -> Self {
+    //     HittableList { objects: vec![obj] }
+    // }
 
     pub fn add(&mut self, obj: Rc<dyn Hittable>) {
         self.objects.push(obj)
