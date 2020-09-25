@@ -29,7 +29,7 @@ jobs:
       run: cargo build --verbose --release
     
     - name: cargo run (release)
-      run: cargo run --release 1280 > /tmp/img.ppm
+      run: cargo run --release 3840 500 500 > /tmp/img.ppm
     
     - name: upload artifact to github
       uses: actions/upload-artifact@v2
