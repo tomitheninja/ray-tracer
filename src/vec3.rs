@@ -9,6 +9,35 @@ impl Vec3 {
         Self(x, y, z)
     }
 
+    pub fn random() -> Self {
+        use ::rand::random;
+        Self(random(), random(), random())
+    }
+
+    pub fn random_range(min: f64, max: f64) -> Self {
+        use ::rand::random;
+        let r = || min + (max - min) * random::<f64>();
+        Self(r(), r(), r())
+    }
+
+    pub fn random_in_unit_sphere() -> Self {
+        loop {
+            let p = Self::random_range(-1.0, 1.0);
+            if p.len_squared() < 1.0 {
+                return p;
+            }
+        }
+    }
+
+    pub fn random_unit_vec() -> Self {
+        use ::rand::random;
+        let r = |min, max| min + (max - min) * random::<f64>();
+        let a: f64 = r(0.0, 2.0 * std::f64::consts::PI);
+        let z = r(-1.0, 1.0);
+        let r = (1.0 - z * z).sqrt();
+        Self(r * a.cos(), r * a.sin(), z)
+    }
+
     pub fn x(&self) -> f64 {
         self.0
     }
@@ -46,14 +75,14 @@ impl Vec3 {
     }
 
     fn to_u8(x: f64) -> u8 {
-        (255.999 * x.min(0.999).max(0.0)) as u8
+        (256.0 * x.sqrt().min(0.999).max(0.0)) as u8
     }
 
     pub fn rgb(&self, samples_per_pixel: usize) -> String {
         let scale = 1.0 / (samples_per_pixel as f64);
 
         format!(
-            "{:03} {:03} {:03}",
+            "{} {} {}",
             Self::to_u8(self.0 * scale),
             Self::to_u8(self.1 * scale),
             Self::to_u8(self.2 * scale)

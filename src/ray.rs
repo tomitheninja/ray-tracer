@@ -23,9 +23,14 @@ impl Ray {
         self.origin + t * self.direction
     }
 
-    pub fn color(&self, world: &HittableList) -> Color {
-        if let Some(hit) = world.hit(self, 0.0, f64::INFINITY) {
-            0.5 * (hit.normal + Color::white())
+    pub fn color(&self, world: &HittableList, depth: usize) -> Color {
+        // (0.00...01 / 2 = 0.00...01) != 0
+        const EPS: f64 = 0.000001;
+        if depth == 0 {
+            Color::black()
+        } else if let Some(hit) = world.hit(self, EPS, f64::INFINITY) {
+            let target = hit.p + hit.normal + Point::random_unit_vec();
+            0.5 * Self::new(hit.p, target - hit.p).color(&world, depth - 1)
         } else {
             let unit_vec = self.direction.unit_vector();
             let t = 0.5 * (unit_vec.y() + 1.0);
