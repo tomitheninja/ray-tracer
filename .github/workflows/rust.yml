@@ -9,30 +9,29 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    
-    - name: cargo check
-      run: cargo check --verbose
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: cargo build
-      run: cargo build --verbose
+      - name: cargo check
+        run: cargo check --verbose
 
-    - name: cargo test
-      run: cargo test --verbose
-    
-    - name: cargo build (release)
-      run: cargo build --verbose --release
-    
-    - name: cargo run (release)
-      run: cargo run --release 3840 500 500 > /tmp/img.ppm
-    
-    - name: upload artifact to github
-      uses: actions/upload-artifact@v2
-      with:
-        name: artifact
-        path: /tmp/img.ppm
+      - name: cargo build
+        run: cargo build --verbose
+
+      - name: cargo test
+        run: cargo test --verbose
+
+      - name: cargo build (release)
+        run: cargo build --verbose --release
+
+      - name: cargo run (release)
+        run: cargo run --release -- 4K -d 500 -s 500 -o /tmp/img.png
+
+      - name: upload artifact to github
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifact
+          path: /tmp/img.png

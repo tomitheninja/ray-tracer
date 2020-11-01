@@ -78,15 +78,18 @@ impl Vec3 {
         (256.0 * x.sqrt().min(0.999).max(0.0)) as u8
     }
 
-    pub fn rgb(&self, samples_per_pixel: usize) -> String {
+    pub fn rgb_bytes(&self, samples_per_pixel: usize) -> (u8, u8, u8) {
         let scale = 1.0 / (samples_per_pixel as f64);
-
-        format!(
-            "{} {} {}",
+        (
             Self::to_u8(self.0 * scale),
             Self::to_u8(self.1 * scale),
-            Self::to_u8(self.2 * scale)
+            Self::to_u8(self.2 * scale),
         )
+    }
+
+    pub fn rgb(&self, samples_per_pixel: usize) -> String {
+        let (r, g, b) = self.rgb_bytes(samples_per_pixel);
+        format!("{} {} {}", r, g, b)
     }
 
     pub fn white() -> Self {

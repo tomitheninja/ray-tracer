@@ -14,6 +14,11 @@ impl HittableList {
     pub fn add(&mut self, obj: Rc<dyn Hittable>) {
         self.objects.push(obj)
     }
+
+    pub fn chain_add(mut self, obj: Rc<dyn Hittable>) -> Self {
+        self.add(obj);
+        self
+    }
 }
 
 impl Hittable for HittableList {
