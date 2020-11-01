@@ -393,6 +393,7 @@ dependencies = [
  "image",
  "progress",
  "rand",
+ "rayon",
 ]
 
 [[package]]
