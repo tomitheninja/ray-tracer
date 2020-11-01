@@ -1,19 +1,20 @@
 use super::{HitRecord, Hittable};
-use std::sync::Arc;
+use std::{
+    boxed::Box,
+    marker::{Send, Sync},
+};
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default)]
 pub struct HittableList {
-    objects: Vec<Arc<dyn Hittable>>,
+    objects: Vec<Box<dyn Hittable + Sync + Send>>,
 }
 
-// unsafe impl Sync for HittableList {}
-
 impl HittableList {
-    pub fn add(&mut self, obj: Arc<dyn Hittable>) {
+    pub fn add(&mut self, obj: Box<dyn Hittable + Sync + Send>) {
         self.objects.push(obj)
     }
 
-    pub fn chain_add(mut self, obj: Arc<dyn Hittable>) -> Self {
+    pub fn chain_add(mut self, obj: Box<dyn Hittable + Sync + Send>) -> Self {
         self.add(obj);
         self
     }
