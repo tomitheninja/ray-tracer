@@ -1,13 +1,5 @@
+use super::Config;
 use clap::{App, Arg};
-
-#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq)]
-pub struct Config {
-    pub img_width: usize,
-    pub img_height: usize,
-    pub samples_per_pixel: usize,
-    pub max_ray_depth: usize,
-    pub output_file: String,
-}
 
 fn positive_int(s: String) -> Result<(), String> {
     s.parse::<usize>()
@@ -31,6 +23,9 @@ fn positive_int_or_alias(s: String) -> Result<(), String> {
 }
 
 impl Config {
+    /// Parse config from CLI arguments
+    ///
+    /// use --help to get more info
     pub fn from_args() -> Self {
         let matches = App::new("Ray tracing")
             .author("tomitheninja (Südi Tamás)")

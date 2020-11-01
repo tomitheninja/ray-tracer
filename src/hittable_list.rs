@@ -1,4 +1,6 @@
+use super::Ray;
 use super::{HitRecord, Hittable};
+
 use std::{
     boxed::Box,
     marker::{Send, Sync},
@@ -21,11 +23,11 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &crate::ray::Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
-        // Find the object that hits the ray first
-        self.objects.iter().fold(None, |best, x| {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+        // Find the object that hit the ray first
+        self.objects.iter().fold(None, |best, obj| {
             let closest_so_far = best.as_ref().map_or(t_max, |x| x.t);
-            x.hit(r, t_min, closest_so_far).or(best)
+            obj.hit(ray, t_min, closest_so_far).or(best)
         })
     }
 }

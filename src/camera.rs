@@ -1,6 +1,6 @@
 use super::{Point, Ray};
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Camera {
     origin: Point,
     lower_left_corner: Point,
@@ -8,14 +8,12 @@ pub struct Camera {
     vertical: Point,
 }
 
-impl Default for Camera {
-    fn default() -> Self {
-        let aspect_ratio = 16.0 / 9.0;
+impl Camera {
+    pub fn new(origin: Point, aspect_ratio: f64) -> Self {
         let viewport_height = 2.0;
         let viewport_width = aspect_ratio * viewport_height;
         let focal_length = 1.0;
 
-        let origin = Point::new(0.0, 0.0, 0.0);
         let horizontal = Point::new(viewport_width, 0.0, 0.0);
         let vertical = Point::new(0.0, viewport_height, 0.0);
         let lower_left_corner = {
@@ -32,17 +30,12 @@ impl Default for Camera {
             lower_left_corner,
         }
     }
-}
-
-impl Camera {
-    pub fn new() -> Self {
-        Self::default()
-    }
 
     pub fn get_direction(&self, u: f64, v: f64) -> Point {
         self.lower_left_corner + u * self.horizontal + v * self.vertical - self.origin
     }
 
+    /// Create a ray which points from the camera to he real (x, y)
     pub fn get_ray(&self, u: f64, v: f64) -> Ray {
         let direction = self.get_direction(u, v);
         Ray::new(self.origin, direction)

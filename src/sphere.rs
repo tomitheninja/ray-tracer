@@ -1,5 +1,7 @@
 use super::{HitRecord, Hittable, Point, Ray};
 
+/// Sphere's body can be calculated
+/// using the `x^2 + y^2 + z^2 <= r^2` formula
 #[derive(Debug, Default, PartialEq)]
 pub struct Sphere {
     center: Point,
@@ -13,8 +15,17 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
+    /// It is easy to calculate if a ray hits the sphere, because
+    ///
+    /// **if the discriminant is**
+    ///
+    /// - greater than 0,
+    /// then there are two intersections (front and back).
+    ///
+    /// - smaller than or equal to 0,
+    /// then the ray missed the object
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
-        // A sphere is given using x^2 + y^2 + z^2 = r^2
+        // A sphere is given using x^2 + y^2 + z^2 <= r^2
         //
         // If the ray goes through the sphere
         // then the discriminant > 0 (there are two points where it hits the sphere)
@@ -31,18 +42,20 @@ impl Hittable for Sphere {
         let discriminant = half_b.powi(2) - a * c;
 
         if discriminant > 0.0 {
-            let root = discriminant.sqrt();
+            let discriminant = discriminant.sqrt();
 
-            for &signed_root in [root, -root].iter() {
-                let temp = (-half_b - signed_root) / a;
+            // Try both intersections
+            for &signed_root in [discriminant, -discriminant].iter() {
+                // (-b +- sqrt(d)) / 2a
+                let t = (-half_b - signed_root) / a;
 
-                if t_min < temp && temp < t_max {
-                    let t = temp;
-                    let p = r.point_at(temp);
-                    let outward_normal = (p - self.center) / self.radius;
+                // The front one will be between t_min and t_max
+                if t_min < t && t < t_max {
+                    let position = r.point_at(t).unwrap();
+                    let outward_normal = (position - self.center) / self.radius;
                     let mut result = HitRecord {
                         t,
-                        p,
+                        position,
                         ..HitRecord::default()
                     };
                     result.set_front_face(r, &outward_normal);
@@ -50,6 +63,6 @@ impl Hittable for Sphere {
                 }
             }
         }
-        None
+        None // All you had to do is follow the damn sphere Cray!
     }
 }

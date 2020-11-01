@@ -1,22 +1,29 @@
+#[macro_use]
+mod macros;
+
 mod camera;
+mod color;
 mod config;
+mod hit_record;
 mod hittable;
 mod hittable_list;
+mod point;
 mod ray;
 mod sphere;
-mod vec3;
 
 use ::rand::random;
 use camera::Camera;
+use color::Color;
 use config::Config;
-use hittable::{HitRecord, Hittable};
+use hit_record::HitRecord;
+use hittable::Hittable;
 use hittable_list::HittableList;
 use image::{ImageBuffer, Rgb};
+use point::Point;
 use ray::Ray;
 use rayon::prelude::*;
 use sphere::Sphere;
 use std::boxed::Box;
-use vec3::{Color, Point};
 
 fn main() {
     eprintln!("Loading config...");
@@ -39,7 +46,7 @@ fn main() {
         .chain_add(Box::new(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0)));
 
     // Camera
-    let camera = Camera::new();
+    let camera = Camera::new(Point::default(), config.aspect_ratio());
 
     // Render
     let mut bar = progress::Bar::new();
@@ -55,15 +62,17 @@ fn main() {
         }
         prev_percent = percent;
 
-        // let mut pixel_color = Color::default();
         let pixel_color = (0..config.samples_per_pixel)
             .into_par_iter()
             .map(|_| {
                 let u = (x as f64 + random::<f64>()) / (img_width as f64 - 1.0);
                 let v = (y as f64 + random::<f64>()) / (img_height as f64 - 1.0);
+
+                // Create a ray pointing from the camera to (x, y)
                 let ray = camera.get_ray(u, v);
 
-                ray.color(&world, config.max_ray_depth)
+                // Send the ray into the scene
+                return ray.color(&world, config.max_ray_depth);
             })
             .reduce(|| Color::black(), |a, b| a + b);
 
