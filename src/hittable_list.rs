@@ -1,21 +1,19 @@
 use super::{HitRecord, Hittable};
-use std::rc::Rc;
+use std::sync::Arc;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct HittableList {
-    objects: Vec<Rc<dyn Hittable>>,
+    objects: Vec<Arc<dyn Hittable>>,
 }
 
-impl HittableList {
-    // pub fn new(obj: Rc<dyn Hittable>) -> Self {
-    //     HittableList { objects: vec![obj] }
-    // }
+// unsafe impl Sync for HittableList {}
 
-    pub fn add(&mut self, obj: Rc<dyn Hittable>) {
+impl HittableList {
+    pub fn add(&mut self, obj: Arc<dyn Hittable>) {
         self.objects.push(obj)
     }
 
-    pub fn chain_add(mut self, obj: Rc<dyn Hittable>) -> Self {
+    pub fn chain_add(mut self, obj: Arc<dyn Hittable>) -> Self {
         self.add(obj);
         self
     }

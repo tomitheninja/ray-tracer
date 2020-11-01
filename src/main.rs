@@ -13,8 +13,9 @@ use hittable::{HitRecord, Hittable};
 use hittable_list::HittableList;
 use image::{ImageBuffer, Rgb};
 use ray::Ray;
+use rayon::prelude::*;
 use sphere::Sphere;
-use std::rc::Rc;
+use std::sync::Arc;
 use vec3::{Color, Point};
 
 fn main() {
@@ -34,8 +35,8 @@ fn main() {
 
     // World
     let world = HittableList::default()
-        .chain_add(Rc::new(Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5)))
-        .chain_add(Rc::new(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0)));
+        .chain_add(Arc::new(Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5)))
+        .chain_add(Arc::new(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0)));
 
     // Camera
     let camera = Camera::new();
@@ -54,13 +55,24 @@ fn main() {
         }
         prev_percent = percent;
 
-        let mut pixel_color = Color::default();
-        for _ in 0..config.samples_per_pixel {
-            let u = (x as f64 + random::<f64>()) / (img_width as f64 - 1.0);
-            let v = (y as f64 + random::<f64>()) / (img_height as f64 - 1.0);
-            let ray = camera.get_ray(u, v);
-            pixel_color += ray.color(&world, config.max_ray_depth);
-        }
+        // let mut pixel_color = Color::default();
+        let pixel_color: Vec<Color> = (0..config.samples_per_pixel)
+            .into_par_iter()
+            .map(|_| {
+                let u = (x as f64 + random::<f64>()) / (img_width as f64 - 1.0);
+                let v = (y as f64 + random::<f64>()) / (img_height as f64 - 1.0);
+                let ray = camera.get_ray(u, v);
+
+                unsafe impl Sync for HittableList {};
+                // world is owned by the main thread
+                // So there will be always at least one owner.
+                // So drop should not happen here.
+                // This is an immutable borrow. It should not damage me.
+                ray.color(&world, config.max_ray_depth)
+            })
+            .collect();
+
+        let pixel_color = pixel_color.iter().fold(Color::default(), |c1, &c2| c1 + c2);
 
         let color = pixel_color.rgb_bytes(config.samples_per_pixel);
 
