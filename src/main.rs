@@ -7,6 +7,7 @@ mod config;
 mod hit_record;
 mod hittable;
 mod hittable_list;
+mod material;
 mod point;
 mod ray;
 mod sphere;
@@ -23,7 +24,7 @@ use point::Point;
 use ray::Ray;
 use rayon::prelude::*;
 use sphere::Sphere;
-use std::boxed::Box;
+use std::{boxed::Box, sync::Arc};
 
 fn main() {
     eprintln!("Loading config...");
@@ -41,9 +42,34 @@ fn main() {
     eprintln!();
 
     // World
-    let world = HittableList::default()
-        .chain_add(Box::new(Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5)))
-        .chain_add(Box::new(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0)));
+    let world = {
+        let material_ground = Arc::new(material::Lambertian::new(Color::new(0.8, 0.8, 0.0)));
+        let material_center = Arc::new(material::Lambertian::new(Color::new(0.7, 0.3, 0.3)));
+        let material_left = Arc::new(material::Metal::new(Color::new(0.8, 0.8, 0.8)));
+        let material_right = Arc::new(material::Metal::new(Color::new(0.8, 0.6, 0.2)));
+
+        HittableList::default()
+            .chain_add(Box::new(Sphere::new(
+                Point::new(0.0, -100.5, -1.0),
+                100.0,
+                material_ground.clone(),
+            )))
+            .chain_add(Box::new(Sphere::new(
+                Point::new(0.0, 0.0, -1.0),
+                0.5,
+                material_center.clone(),
+            )))
+            .chain_add(Box::new(Sphere::new(
+                Point::new(-1.0, 0.0, -1.0),
+                0.5,
+                material_left.clone(),
+            )))
+            .chain_add(Box::new(Sphere::new(
+                Point::new(1.0, 0.0, -1.0),
+                0.5,
+                material_right.clone(),
+            )))
+    };
 
     // Camera
     let camera = Camera::new(Point::default(), config.aspect_ratio());

@@ -66,6 +66,19 @@ impl Point {
     pub fn unit_vector(&self) -> Self {
         *self / self.len()
     }
+
+    /// Reflect self to a normal vector
+    pub fn reflect(&self, normal: &Self) -> Self {
+        let b_len = Self::dot(&self, &normal);
+        let b = b_len * *normal;
+        *self - 2.0 * b
+    }
+
+    /// Return true if the vector is close to zero in all dimensions.
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        return self.0.abs() < s && self.1.abs() < s && self.2.abs() < s;
+    }
 }
 
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};

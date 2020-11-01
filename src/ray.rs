@@ -1,7 +1,7 @@
 use super::{Color, Hittable, HittableList, Point};
 
 /// Create a ray that goes from origin to infinity in a given direction
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Default, Copy, Clone)]
 pub struct Ray {
     origin: Point,
     direction: Point,
@@ -67,16 +67,16 @@ impl Ray {
         if allowed_collisions == 0 {
             // Stuck in a mirror room
             // The ray will fade away here
-            Color::black()
-        } else if let Some(hit) = world.hit(self, f64::EPSILON, f64::INFINITY) {
+            return Color::black();
+        } else if let Some(hit) = world.hit(&self, f64::EPSILON, f64::INFINITY) {
             // Hit an object
-            // Let's turn accordingly
-            // And take some of the object's color
-            let target = hit.position + hit.normal + Point::random_unit_vec();
-            let new_origin = hit.position;
-            let new_direction = target - hit.position;
-            let new_ray = Ray::new(new_origin, new_direction);
-            0.5 * new_ray.color(&world, allowed_collisions - 1)
+            if let Some(mat) = hit.material.scatter(&self, &hit) {
+                mat.attenuation * mat.scattered.color(&world, allowed_collisions - 1)
+            } else {
+                Color::black()
+            }
+
+        // return 0.5 * new_ray.color(&world, allowed_collisions - 1);
         } else {
             // Reached Infinity
             // Let's give the sky a nice gradient color
@@ -87,7 +87,7 @@ impl Ray {
             let t = 0.5 * (unit_vec.y() + 1.0);
             let start_value = Color::white();
             let end_value = Color::new(0.5, 0.7, 1.0);
-            (1.0 - t) * start_value + t * end_value
+            return (1.0 - t) * start_value + t * end_value;
         }
     }
 }

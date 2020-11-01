@@ -1,9 +1,12 @@
 use super::{Point, Ray};
+use crate::material::Material;
+use std::{fmt::Debug, sync::Arc};
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug)]
 pub struct HitRecord {
     pub position: Point,
     pub normal: Point,
+    pub material: Arc<dyn Material>,
     pub t: f64,
     pub front_face: bool,
 }

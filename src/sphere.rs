@@ -1,16 +1,24 @@
+use std::sync::Arc;
+
 use super::{HitRecord, Hittable, Point, Ray};
+use crate::material::Material;
 
 /// Sphere's body can be calculated
 /// using the `x^2 + y^2 + z^2 <= r^2` formula
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug)]
 pub struct Sphere {
     center: Point,
     radius: f64,
+    material: Arc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point, radius: f64) -> Self {
-        Self { center, radius }
+    pub fn new(center: Point, radius: f64, material: Arc<dyn Material>) -> Self {
+        Self {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
@@ -56,7 +64,9 @@ impl Hittable for Sphere {
                     let mut result = HitRecord {
                         t,
                         position,
-                        ..HitRecord::default()
+                        material: self.material.clone(),
+                        front_face: false,        // by set_front_face
+                        normal: Point::default(), // by set_front_face
                     };
                     result.set_front_face(r, &outward_normal);
                     return Some(result);
