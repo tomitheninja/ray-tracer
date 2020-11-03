@@ -68,7 +68,7 @@ impl Ray {
             // Stuck in a mirror room
             // The ray will fade away here
             return Color::black();
-        } else if let Some(hit) = world.hit(&self, f64::EPSILON, f64::INFINITY) {
+        } else if let Some(hit) = world.hit(&self, 0.001, f64::INFINITY) {
             // Hit an object
             if let Some(mat) = hit.material.scatter(&self, &hit) {
                 mat.attenuation * mat.scattered.color(&world, allowed_collisions - 1)
